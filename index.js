@@ -10,6 +10,7 @@ var installDir;
 var classpathFile;
 var ensimeVersion;
 var dotEnsime;
+var ensimeCache;
 var sbtCmd;
 var sbtVersion = "0.13.9";
 var maxWaitMs = 30000; //max 5min startup time for ensime-server
@@ -20,6 +21,7 @@ function setup(dotEnsime_, ensimeVersion_, ensimeInstallDir, sbtCmd_) {
   classpathFile = installDir + path.sep + "ensime.classpath";
   ensimeVersion = ensimeVersion_;
   dotEnsime = dotEnsime_;
+  ensimeCache = path.dirname(dotEnsime) + path.sep + ".ensime_cache";
   sbtCmd = sbtCmd_;
   initialized = true;
 }
@@ -134,6 +136,8 @@ function startFromClasspath(classpath, callback) {
   var javaFlags = readDotEnsimeArray(dotEnsimeContents, "java-flags");
   console.log("Using JVM flags " + javaFlags.join(" "));
 
+  createDir(ensimeCache);
+
   var args = ["-classpath", classpath];
   args = args.concat(javaFlags);
   args.push("-Densime.config=" + dotEnsime);
@@ -159,7 +163,7 @@ function startFromClasspath(classpath, callback) {
 
 function waitForPort(maxMs, callback) {
   if (maxMs < 0) callback("Timeout waiting for ensime-server to start.");
-  var httpFile = path.dirname(dotEnsime) + path.sep + ".ensime_cache" + path.sep + "http";
+  var httpFile = ensimeCache + path.sep + "http";
   try {
     var port = fs.readFileSync(httpFile);
     callback(false, {
