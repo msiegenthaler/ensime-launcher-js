@@ -164,7 +164,7 @@ function waitForPort(ensimeCache, maxMs, callback) {
   catch (e) {
     var t = 300;
     setTimeout(function() {
-      waitForPort(maxMs - t, callback);
+      waitForPort(ensimeCache, maxMs - t, callback);
     }, t);
   }
 }
