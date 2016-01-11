@@ -1,7 +1,8 @@
 Ensime Launcher JS
 ==================
 
-NPM module that downloads and starts the ensime server.
+NPM module that downloads and starts the [ENSIME server](https://github.com/ensime/ensime-server). ENSIME is a cross editor platform
+for the scala programming language.
 
 
 Usage
