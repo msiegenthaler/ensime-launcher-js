@@ -19,9 +19,9 @@ function Launcher(dotEnsime, ensimeVersion, installDir, sbtCmd) {
 
 Launcher.prototype.update = function(callback) {
   console.log("Updating ensime-server.");
-  fs.unlinkSync(classpathFile);
+  fs.unlinkSync(this.classpathFile);
   this.install(callback);
-}
+};
 
 Launcher.prototype.install = function(callback) {
   console.log("Installing ensime-server " + this.ensimeVersion + " to " + this.installDir);
@@ -50,7 +50,7 @@ Launcher.prototype.install = function(callback) {
     callback(false);
   });
   sbt.stdin.end();
-}
+};
 
 function generateBuildSbt(scalaVersion, ensimeVersion, target) {
   return "" +
@@ -100,7 +100,7 @@ Launcher.prototype.start = function(callback) {
       waitForPort(this.ensimeCache, this.maxWaitMs, callback);
     }.bind(this));
   }.bind(this));
-}
+};
 
 Launcher.prototype.getClasspath = function(callback) {
   if (fs.existsSync(this.classpathFile)) {
@@ -117,7 +117,7 @@ Launcher.prototype.getClasspath = function(callback) {
       callback(false, contents);
     }.bind(this));
   }
-}
+};
 
 function startFromClasspath(dotEnsime, ensimeCache, classpath, callback) {
   var dotEnsimeContents = fs.readFileSync(dotEnsime, "utf-8");
@@ -169,4 +169,4 @@ function waitForPort(ensimeCache, maxMs, callback) {
   }
 }
 
-module.exports = Launcher
+module.exports = Launcher;
