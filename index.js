@@ -138,7 +138,8 @@ function startFromClasspath(classpath, callback) {
 
   createDir(ensimeCache);
 
-  var args = ["-classpath", classpath];
+  var toolsJar = javaHome + path.sep + "lib" + path.sep + "tools.jar";
+  var args = ["-classpath", toolsJar + path.delimiter + classpath];
   args = args.concat(javaFlags);
   args.push("-Densime.config=" + dotEnsime);
   args.push("org.ensime.server.Server");
