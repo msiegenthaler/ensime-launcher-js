@@ -5,53 +5,43 @@ var createDir = require("./utils").createDir;
 var readDotEnsimeValue = require("./utils").readDotEnsimeValue;
 var readDotEnsimeArray = require("./utils").readDotEnsimeArray;
 
-var initialized;
-var installDir;
-var classpathFile;
-var ensimeVersion;
-var dotEnsime;
-var ensimeCache;
-var sbtCmd;
-var sbtVersion = "0.13.9";
-var maxWaitMs = 30000; //max 5min startup time for ensime-server
+function Launcher(dotEnsime, ensimeVersion, installDir, sbtCmd) {
+  this.dotEnsime = dotEnsime;
+  this.ensimeVersion = ensimeVersion;
+  this.installDir = installDir;
+  this.sbtCmd = sbtCmd;
 
-/** Setup the library. Must call before any other call. */
-function setup(dotEnsime_, ensimeVersion_, ensimeInstallDir, sbtCmd_) {
-  installDir = ensimeInstallDir;
-  classpathFile = installDir + path.sep + "ensime.classpath";
-  ensimeVersion = ensimeVersion_;
-  dotEnsime = dotEnsime_;
-  ensimeCache = path.dirname(dotEnsime) + path.sep + ".ensime_cache";
-  sbtCmd = sbtCmd_;
-  initialized = true;
+  this.classpathFile = installDir + path.sep + "ensime.classpath";
+  this.ensimeCache = path.dirname(dotEnsime) + path.sep + ".ensime_cache";
+  this.sbtVersion = "0.13.9";
+  this.maxWaitMs = 30000; //max 5min startup time for ensime-server
 }
 
-function update(callback) {
-  if (!initialized) return callback("Not initialized, please call setup first.");
+Launcher.prototype.update = function(callback) {
   console.log("Updating ensime-server.");
   fs.unlinkSync(classpathFile);
-  install(callback);
+  this.install(callback);
 }
 
-function install(callback) {
-  console.log("Installing ensime-server " + ensimeVersion + " to " + installDir);
-  createDir(installDir);
-  createDir(installDir + path.sep + "project");
+Launcher.prototype.install = function(callback) {
+  console.log("Installing ensime-server " + this.ensimeVersion + " to " + this.installDir);
+  createDir(this.installDir);
+  createDir(this.installDir + path.sep + "project");
 
-  var dotEnsimeContents = fs.readFileSync(dotEnsime, "utf-8");
+  var dotEnsimeContents = fs.readFileSync(this.dotEnsime, "utf-8");
   var scalaVersion = readDotEnsimeValue(dotEnsimeContents, "scala-version");
   console.log("Using scala version " + scalaVersion);
 
   // Generate build.sbt
-  var buildSbtContents = generateBuildSbt(scalaVersion, ensimeVersion, classpathFile);
-  fs.writeFileSync(installDir + path.sep + "build.sbt", buildSbtContents);
+  var buildSbtContents = generateBuildSbt(scalaVersion, this.ensimeVersion, this.classpathFile);
+  fs.writeFileSync(this.installDir + path.sep + "build.sbt", buildSbtContents);
   // Generate build.properties
-  var buildPropertiesContents = "sbt.version=" + sbtVersion;
-  fs.writeFileSync(installDir + path.sep + "project" + path.sep + "build.properies", buildPropertiesContents);
+  var buildPropertiesContents = "sbt.version=" + this.sbtVersion;
+  fs.writeFileSync(this.installDir + path.sep + "project" + path.sep + "build.properies", buildPropertiesContents);
 
   //Execute sbt
-  var sbt = spawn(sbtCmd, ["-Dsbt.log.noformat=true", "saveClasspath", "clean"], {
-    cwd: installDir
+  var sbt = spawn(this.sbtCmd, ["-Dsbt.log.noformat=true", "saveClasspath", "clean"], {
+    cwd: this.installDir
   });
   sbt.stdout.pipe(process.stdout);
   sbt.stderr.pipe(process.stdout);
@@ -99,37 +89,37 @@ function generateBuildSbt(scalaVersion, ensimeVersion, target) {
     "}";
 }
 
-function start(callback) {
-  if (!initialized) return callback("Not initialized, please call setup first.");
-  getClasspath(function(err, classpath) {
+
+Launcher.prototype.start = function(callback) {
+  this.getClasspath(function(err, classpath) {
     if (err) return callback(err);
-    console.log("Starting ensime-server for " + dotEnsime);
-    startFromClasspath(classpath, function(err) {
+    console.log("Starting ensime-server for " + this.dotEnsime);
+    startFromClasspath(this.dotEnsime, this.ensimeCache, classpath, function(err) {
       if (err) return callback(err);
       console.log("Waiting for ensime-server to start.");
-      waitForPort(maxWaitMs, callback);
-    });
-  });
+      waitForPort(this.ensimeCache, this.maxWaitMs, callback);
+    }.bind(this));
+  }.bind(this));
 }
 
-function getClasspath(callback) {
-  if (fs.existsSync(classpathFile)) {
+Launcher.prototype.getClasspath = function(callback) {
+  if (fs.existsSync(this.classpathFile)) {
     //already dowloaded ensime and its dependencies
-    var contents = fs.readFileSync(classpathFile);
+    var contents = fs.readFileSync(this.classpathFile);
     callback(false, contents);
   }
   else {
     //need to download ensime-server first
     console.log("Need to install ensime-server first. Doing that now...");
-    install(function(err) {
+    this.install(function(err) {
       if (err) return callback(err);
-      var contents = fs.readFileSync(classpathFile);
+      var contents = fs.readFileSync(this.classpathFile);
       callback(false, contents);
-    });
+    }.bind(this));
   }
 }
 
-function startFromClasspath(classpath, callback) {
+function startFromClasspath(dotEnsime, ensimeCache, classpath, callback) {
   var dotEnsimeContents = fs.readFileSync(dotEnsime, "utf-8");
   var javaHome = readDotEnsimeValue(dotEnsimeContents, "java-home");
   var javaCmd = javaHome + path.sep + "bin" + path.sep + "java";
@@ -162,7 +152,7 @@ function startFromClasspath(classpath, callback) {
   });
 }
 
-function waitForPort(maxMs, callback) {
+function waitForPort(ensimeCache, maxMs, callback) {
   if (maxMs < 0) callback("Timeout waiting for ensime-server to start.");
   var httpFile = ensimeCache + path.sep + "http";
   try {
@@ -179,14 +169,4 @@ function waitForPort(maxMs, callback) {
   }
 }
 
-module.exports = {
-  /** Setup the library. Must call before any other call. */
-  setup: setup,
-
-  /** Start the ensime-server.
-      Will return: {http: <http port number> }. */
-  start: start,
-
-  /** Update ensime-server. No need to call before start. */
-  update: update
-};
+module.exports = Launcher
