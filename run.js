@@ -13,5 +13,15 @@ esl.start(function(err, res) {
   if (err) return console.error(err);
   console.log("=================================");
   console.log("Ensime started on port: "+res.http);
+  console.log("=================================");
+
+  setTimeout(function() {
+    esl.stop(function(err) {
+      if (err) return console.error(err);
+      console.log("=================================");
+      console.log("Ensime now stopped.");
+      console.log("=================================");
+    })
+  }, 2000);
 });
 

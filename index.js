@@ -94,7 +94,7 @@ Launcher.prototype.start = function(callback) {
   this.getClasspath(function(err, classpath) {
     if (err) return callback(err);
     console.log("Starting ensime-server for " + this.dotEnsime);
-    startFromClasspath(this.dotEnsime, this.ensimeCache, classpath, function(err) {
+    this.ensimeProcess = startFromClasspath(this.dotEnsime, this.ensimeCache, classpath, function(err) {
       if (err) return callback(err);
       console.log("Waiting for ensime-server to start.");
       waitForPort(this.ensimeCache, this.maxWaitMs, callback);
@@ -150,6 +150,7 @@ function startFromClasspath(dotEnsime, ensimeCache, classpath, callback) {
     if (!replied) callback(false);
     replied = true;
   });
+  return p;
 }
 
 function waitForPort(ensimeCache, maxMs, callback) {
@@ -168,5 +169,15 @@ function waitForPort(ensimeCache, maxMs, callback) {
     }, t);
   }
 }
+
+
+Launcher.prototype.stop = function(callback) {
+  if (this.ensimeProcess) {
+    console.log("Stopping ensime process (" + this.ensimeProcess.pid + ")");
+    this.ensimeProcess.kill();
+    callback(false);
+  }
+  else callback(false);
+};
 
 module.exports = Launcher;

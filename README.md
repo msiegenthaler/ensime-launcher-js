@@ -39,6 +39,9 @@ The following functions are available:
   - *update(callback)*:
       (Re)download the newest version of ensime.
 
+  - *stop(callback)*:
+      Stop ensime.
+
 
 Credits to
 ----------
