@@ -7,13 +7,11 @@ if (process.argv.length < 3) {
 }
 var dotEnsime = process.argv[2];
 
-els.setup(dotEnsime, "0.9.10-SNAPSHOT", "/tmp/ensime", "sbt", function(err, res) {
-  if (err) return console.error(err);
+els.setup(dotEnsime, "0.9.10-SNAPSHOT", "/tmp/ensime", "sbt");
 
-  els.start(function(err, res) {
-    if (err) return console.error(err);
-    console.log("=================================");
-    console.log("Ensime started on port: "+res.http);
-  });
+els.start(function(err, res) {
+  if (err) return console.error(err);
+  console.log("=================================");
+  console.log("Ensime started on port: "+res.http);
 });
 

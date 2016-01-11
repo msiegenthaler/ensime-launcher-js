@@ -5,6 +5,7 @@ var createDir = require("./utils").createDir;
 var readDotEnsimeValue = require("./utils").readDotEnsimeValue;
 var readDotEnsimeArray = require("./utils").readDotEnsimeArray;
 
+var initialized;
 var installDir;
 var classpathFile;
 var ensimeVersion;
@@ -14,17 +15,17 @@ var sbtVersion = "0.13.9";
 var maxWaitMs = 30000; //max 5min startup time for ensime-server
 
 /** Setup the library. Must call before any other call. */
-function setup(dotEnsime_, ensimeVersion_, ensimeInstallDir, sbtCmd_, callback) {
+function setup(dotEnsime_, ensimeVersion_, ensimeInstallDir, sbtCmd_) {
   installDir = ensimeInstallDir;
   classpathFile = installDir + path.sep + "ensime.classpath";
   ensimeVersion = ensimeVersion_;
   dotEnsime = dotEnsime_;
   sbtCmd = sbtCmd_;
-  callback(false);
+  initialized = true;
 }
 
 function update(callback) {
-  if (!classpathFile) return callback("Not set up.");
+  if (!initialized) return callback("Not initialized, please call setup first.");
   console.log("Updating ensime-server.");
   fs.unlinkSync(classpathFile);
   install(callback);
@@ -97,7 +98,7 @@ function generateBuildSbt(scalaVersion, ensimeVersion, target) {
 }
 
 function start(callback) {
-  if (!classpathFile) return callback("not set up. Please call setup() first.");
+  if (!initialized) return callback("Not initialized, please call setup first.");
   getClasspath(function(err, classpath) {
     if (err) return callback(err);
     console.log("Starting ensime-server for " + dotEnsime);

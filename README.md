@@ -19,23 +19,20 @@ and use it in your code to start the ensime server:
       dotEnsime,
       "0.9.10-SNAPSHOT",  // ensime version
       "/tmp/ensime",      // directory that can be used to install ensime
-      "sbt",              // sbt command (must be already installed)
-      function(err, res) {
-        if (err) return console.error(err);
+      "sbt");            // sbt command (must be already installed)
 
-        els.start(function(err, res) {
-          if (err) return console.error(err);
-          console.log("=================================");
-          console.log("Ensime started on port: "+res.http);
-        });
-      });
+    els.start(function(err, res) {
+      if (err) return console.error(err);
+      console.log("=================================");
+      console.log("Ensime started on port: "+res.http);
+    });
 
 
 API
 ---
 The following functions are available:
 
-  - *setup(dotEnsime, ensimeVersion, ensimeDirector, sbtCmd, callback)*:
+  - *setup(dotEnsime, ensimeVersion, ensimeDirector, sbtCmd)*:
       Must be called before any other function to initialize the ensime launcher.
 
   - *start(callback)*:
