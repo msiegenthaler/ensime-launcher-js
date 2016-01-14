@@ -22,6 +22,6 @@ esl.start(function(err, res) {
       console.log("Ensime now stopped.");
       console.log("=================================");
     })
-  }, 2000);
+  }, 200000);
 });
 

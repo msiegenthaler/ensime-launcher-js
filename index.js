@@ -194,12 +194,14 @@ Launcher.prototype.cleanup = function(callback) {
       // Kill process holding the port
       var port = parseInt(portString, 10);
       exec("lsof -i :" + port + " | grep LISTEN | awk '{print $2}' | xargs kill -9");
+      console.info("Killed process holding port " + port);
     }
     catch (e) {
       //ignore
     }
     finally {
       fs.unlinkSync(httpFile);
+      console.log("Deleted http-port file.");
     }
   }
   catch (e) {
@@ -208,6 +210,7 @@ Launcher.prototype.cleanup = function(callback) {
 
   try {
     fs.unlinkSync(this.ensimeCache + path.sep + "port");
+      console.log("Deleted port file.");
   }
   catch (e) {}
 
