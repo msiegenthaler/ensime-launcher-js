@@ -1,4 +1,5 @@
 var spawn = require("child_process").spawn;
+var exec = require("child_process").exec;
 var fs = require("fs");
 var path = require("path");
 var createDir = require("./utils").createDir;
@@ -17,6 +18,7 @@ function Launcher(dotEnsime, ensimeVersion, installDir, sbtCmd) {
   this.maxWaitMs = 30000; //max 5min startup time for ensime-server
 }
 
+/** Update ensime to the specified version. Can also be used to fix installations. */
 Launcher.prototype.update = function(callback) {
   console.log("Updating ensime-server.");
   fs.unlinkSync(this.classpathFile);
@@ -89,8 +91,10 @@ function generateBuildSbt(scalaVersion, ensimeVersion, target) {
     "}";
 }
 
-
+/** Start ensime. */
 Launcher.prototype.start = function(callback) {
+  if (this.ensimeProcess) return callback("Already running.");
+
   this.getClasspath(function(err, classpath) {
     if (err) return callback(err);
     console.log("Starting ensime-server for " + this.dotEnsime);
@@ -170,7 +174,7 @@ function waitForPort(ensimeCache, maxMs, callback) {
   }
 }
 
-
+/** Stop ensime. */
 Launcher.prototype.stop = function(callback) {
   if (this.ensimeProcess) {
     console.log("Stopping ensime process (" + this.ensimeProcess.pid + ")");
@@ -178,6 +182,36 @@ Launcher.prototype.stop = function(callback) {
     callback(false);
   }
   else callback(false);
+};
+
+/** Gets rid of a running ensime process even if it was not started here. */
+Launcher.prototype.cleanup = function(callback) {
+  try {
+    var httpFile = this.ensimeCache + path.sep + "http";
+    var portString = fs.readFileSync(httpFile);
+
+    try {
+      // Kill process holding the port
+      var port = parseInt(portString, 10);
+      exec("lsof -i :" + port + " | grep LISTEN | awk '{print $2}' | xargs kill -9");
+    }
+    catch (e) {
+      //ignore
+    }
+    finally {
+      fs.unlinkSync(httpFile);
+    }
+  }
+  catch (e) {
+    //ignore
+  }
+
+  try {
+    fs.unlinkSync(this.ensimeCache + path.sep + "port");
+  }
+  catch (e) {}
+
+  callback(false);
 };
 
 module.exports = Launcher;

@@ -42,6 +42,9 @@ The following functions are available:
   - *stop(callback)*:
       Stop ensime.
 
+  - *cleanup(callback)*:
+      Gets rid of a running ensime process even if it was not started here.
+
 
 Credits to
 ----------
