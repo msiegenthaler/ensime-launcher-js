@@ -18,14 +18,16 @@ function Launcher(dotEnsime, ensimeVersion, installDir, sbtCmd) {
   this.maxWaitMs = 30000; //max 5min startup time for ensime-server
 }
 
-/** Update ensime to the specified version. Can also be used to fix installations. */
-Launcher.prototype.update = function(callback) {
+/** Update ensime to the specified version. Can also be used to fix installations.
+  * @param output {out: Stream, err: Stream}
+  * @return nothing */
+Launcher.prototype.update = function(output, callback) {
   console.log("Updating ensime-server.");
   fs.unlinkSync(this.classpathFile);
-  this.install(callback);
+  this.install(output, callback);
 };
 
-Launcher.prototype.install = function(callback) {
+Launcher.prototype.install = function(output, callback) {
   console.log("Installing ensime-server " + this.ensimeVersion + " to " + this.installDir);
   createDir(this.installDir);
   createDir(this.installDir + path.sep + "project");
@@ -45,8 +47,8 @@ Launcher.prototype.install = function(callback) {
   var sbt = spawn(this.sbtCmd, ["-Dsbt.log.noformat=true", "saveClasspath", "clean"], {
     cwd: this.installDir
   });
-  sbt.stdout.pipe(process.stdout);
-  sbt.stderr.pipe(process.stdout);
+  sbt.stdout.pipe(output.out);
+  sbt.stderr.pipe(output.err);
   sbt.on("close", function(code) {
     if (code != 0) callback("SBT exited with code " + code);
     callback(false);
@@ -91,14 +93,16 @@ function generateBuildSbt(scalaVersion, ensimeVersion, target) {
     "}";
 }
 
-/** Start ensime. */
-Launcher.prototype.start = function(callback) {
+/** Start ensime.
+  * @param output {out: Stream, err: Stream}
+  * @return {http: Int} */
+Launcher.prototype.start = function(output, callback) {
   if (this.ensimeProcess) return callback("Already running.");
 
-  this.getClasspath(function(err, classpath) {
+  this.getClasspath(output, function(err, classpath) {
     if (err) return callback(err);
     console.log("Starting ensime-server for " + this.dotEnsime);
-    this.ensimeProcess = startFromClasspath(this.dotEnsime, this.ensimeCache, classpath, function(err) {
+    this.ensimeProcess = startFromClasspath(output, this.dotEnsime, this.ensimeCache, classpath, function(err) {
       if (err) return callback(err);
       console.log("Waiting for ensime-server to start.");
       waitForPort(this.ensimeCache, this.maxWaitMs, callback);
@@ -106,7 +110,7 @@ Launcher.prototype.start = function(callback) {
   }.bind(this));
 };
 
-Launcher.prototype.getClasspath = function(callback) {
+Launcher.prototype.getClasspath = function(output, callback) {
   if (fs.existsSync(this.classpathFile)) {
     //already dowloaded ensime and its dependencies
     var contents = fs.readFileSync(this.classpathFile);
@@ -114,16 +118,18 @@ Launcher.prototype.getClasspath = function(callback) {
   }
   else {
     //need to download ensime-server first
-    console.log("Need to install ensime-server first. Doing that now...");
-    this.install(function(err) {
+    console.log("Need to install ensime-server first. Doing that now...\n");
+    output.out.write("Need to download ENSIME first.");
+    this.install(output, function(err) {
       if (err) return callback(err);
+      output.out.write("Downloaded ENSIME.\n");
       var contents = fs.readFileSync(this.classpathFile);
       callback(false, contents);
     }.bind(this));
   }
 };
 
-function startFromClasspath(dotEnsime, ensimeCache, classpath, callback) {
+function startFromClasspath(output, dotEnsime, ensimeCache, classpath, callback) {
   var dotEnsimeContents = fs.readFileSync(dotEnsime, "utf-8");
   var javaHome = readDotEnsimeValue(dotEnsimeContents, "java-home");
   var javaCmd = javaHome + path.sep + "bin" + path.sep + "java";
@@ -138,8 +144,8 @@ function startFromClasspath(dotEnsime, ensimeCache, classpath, callback) {
   args.push("-Densime.config=" + dotEnsime);
   args.push("org.ensime.server.Server");
   var p = spawn(javaCmd, args);
-  p.stdout.pipe(process.stdout);
-  p.stderr.pipe(process.stdout);
+  p.stdout.pipe(output.out);
+  p.stderr.pipe(output.err);
   p.on("close", function(code) {
     console.log("Ensime server exited with code " + code);
   });

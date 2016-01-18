@@ -33,10 +33,10 @@ API
 ---
 The following functions are available:
 
-  - *start(callback)*:
+  - *start(output, callback)*:
       Start ensime. Will download ensime (once) if not already installed.
 
-  - *update(callback)*:
+  - *update(output, callback)*:
       (Re)download the newest version of ensime.
 
   - *stop(callback)*:
@@ -44,6 +44,11 @@ The following functions are available:
 
   - *cleanup(callback)*:
       Gets rid of a running ensime process even if it was not started here.
+
+Parameters:
+
+  - output: {out: Stream, err: Stream} => Streams that capture the sysout/syserr of the started process (ensime resp. the installer).
+  - callback: function(err, result)
 
 
 Credits to

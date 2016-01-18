@@ -2,6 +2,11 @@
 
 var Launcher = require("./index");
 
+var stdout = {
+  out: process.stdout,
+  err: process.stderr
+};
+
 if (process.argv.length < 3) {
   return console.error("Specify the .ensime file as the first command line argument.");
 }
@@ -9,7 +14,7 @@ var dotEnsime = process.argv[2];
 
 var esl = new Launcher(dotEnsime, "0.9.10-SNAPSHOT", "/tmp/ensime", "sbt");
 
-esl.start(function(err, res) {
+esl.start(stdout, function(err, res) {
   if (err) return console.error(err);
   console.log("=================================");
   console.log("Ensime started on port: "+res.http);
