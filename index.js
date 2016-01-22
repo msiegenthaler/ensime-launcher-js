@@ -30,7 +30,7 @@ Launcher.prototype.update = function(output, callback) {
       //didn't exist
     }
     this.install(output, callback);
-  });
+  }.bind(this));
 };
 
 Launcher.prototype.install = function(output, callback) {
