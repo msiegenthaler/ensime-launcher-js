@@ -23,7 +23,11 @@ function Launcher(dotEnsime, ensimeVersion, installDir, sbtCmd) {
  * @return nothing */
 Launcher.prototype.update = function(output, callback) {
   console.log("Updating ensime-server.");
-  fs.unlinkSync(this.classpathFile);
+  try {
+    fs.unlinkSync(this.classpathFile);
+  } catch (e) {
+    //didn't exist
+  }
   this.install(output, callback);
 };
 
