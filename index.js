@@ -223,4 +223,18 @@ Launcher.prototype.cleanup = function(callback) {
   callback(false);
 };
 
+/** Looks for a running ensime and returns the port it runs on. */
+Launcher.prototype.ports = function(callback) {
+  var httpFile = this.ensimeCache + path.sep + "http";
+  try {
+    var port = fs.readFileSync(httpFile);
+    callback(false, {
+      http: parseInt(port, 10)
+    });
+  }
+  catch (e) {
+    callback(true);
+  }
+};
+
 module.exports = Launcher;

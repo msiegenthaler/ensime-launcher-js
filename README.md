@@ -36,6 +36,9 @@ The following functions are available:
   - *start(output, callback)*:
       Start ensime. Will download ensime (once) if not already installed.
 
+  - *ports(callback)*:
+      Looks for a running ensime and returns the port it runs on.
+
   - *update(output, callback)*:
       (Re)download the newest version of ensime.
 
