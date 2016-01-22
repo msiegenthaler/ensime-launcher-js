@@ -19,8 +19,8 @@ function Launcher(dotEnsime, ensimeVersion, installDir, sbtCmd) {
 }
 
 /** Update ensime to the specified version. Can also be used to fix installations.
-  * @param output {out: Stream, err: Stream}
-  * @return nothing */
+ * @param output {out: Stream, err: Stream}
+ * @return nothing */
 Launcher.prototype.update = function(output, callback) {
   console.log("Updating ensime-server.");
   fs.unlinkSync(this.classpathFile);
@@ -94,8 +94,8 @@ function generateBuildSbt(scalaVersion, ensimeVersion, target) {
 }
 
 /** Start ensime.
-  * @param output {out: Stream, err: Stream}
-  * @return {http: Int} */
+ * @param output {out: Stream, err: Stream}
+ * @return {http: Int} */
 Launcher.prototype.start = function(output, callback) {
   if (this.ensimeProcess) return callback("Already running.");
 
@@ -216,7 +216,7 @@ Launcher.prototype.cleanup = function(callback) {
 
   try {
     fs.unlinkSync(this.ensimeCache + path.sep + "port");
-      console.log("Deleted port file.");
+    console.log("Deleted port file.");
   }
   catch (e) {}
 
