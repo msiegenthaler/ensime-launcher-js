@@ -172,18 +172,19 @@ function startFromClasspath(output, dotEnsime, ensimeCache, classpath, callback)
 function waitForPort(ensimeCache, maxMs, callback) {
   if (maxMs < 0) callback("Timeout waiting for ensime-server to start.");
   var httpFile = ensimeCache + path.sep + "http";
+  var port;
   try {
-    var port = fs.readFileSync(httpFile);
-    callback(false, {
-      http: parseInt(port, 10)
-    });
+    port = fs.readFileSync(httpFile);
   }
   catch (e) {
     var t = 300;
-    setTimeout(function() {
+    return setTimeout(function() {
       waitForPort(ensimeCache, maxMs - t, callback);
     }, t);
   }
+  callback(false, {
+    http: parseInt(port, 10)
+  });
 }
 
 /** Stop ensime. */
