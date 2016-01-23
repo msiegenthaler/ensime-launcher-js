@@ -124,8 +124,8 @@ Launcher.prototype.getClasspath = function(output, callback) {
   }
   else {
     //need to download ensime-server first
-    console.log("Need to install ensime-server first. Doing that now...\n");
-    output.out.write("Need to download ENSIME first.");
+    console.log("Need to install ensime-server first. Doing that now...");
+    output.out.write("Need to download ENSIME first...\n");
     this.install(output, function(err) {
       if (err) return callback(err);
       output.out.write("Downloaded ENSIME.\n");
