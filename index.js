@@ -14,7 +14,7 @@ function Launcher(dotEnsime, ensimeVersion, installDir, sbtCmd) {
 
   this.classpathFile = installDir + path.sep + "ensime.classpath";
   this.ensimeCache = path.dirname(dotEnsime) + path.sep + ".ensime_cache";
-  this.sbtVersion = "0.13.9";
+  this.sbtVersion = "0.13.13";
   this.maxWaitMs = 30000; //max 5min startup time for ensime-server
 }
 
