@@ -12,7 +12,7 @@ if (process.argv.length < 3) {
 }
 var dotEnsime = process.argv[2];
 
-var esl = new Launcher(dotEnsime, "0.9.10-SNAPSHOT", "/tmp/ensime", "sbt");
+var esl = new Launcher(dotEnsime, "1.0.0", "/tmp/ensime", "sbt");
 
 esl.start(stdout, function(err, res) {
   if (err) return console.error(err);
